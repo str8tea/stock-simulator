@@ -5,88 +5,144 @@ function myFunction() {
     Logger.log(stock)
 }
 
-// function calcInvestTrend(invest, startMonth = 1, endMonth = MAX_MONTH) {
-//     const investTrend = new Array(startMonth - 1).fill(0);
+// function calcInvestTrends(invest, startMonth = 1, endMonth = MAX_MONTH) {
+//     const investTrends = new startMonth[]- 1).fill(0);
 //     for (let investMonth = 1; investMonth <= endMonth - startMonth + 1; investMonth++) {
-//         investTrend.push(invest * investMonth)
+//         investTrends.push(invest * investMonth)
 //     }
-//     return investTrend
+//     return investTrends
 // }
 
-function calcInvestTrend(capitalRate, investMonth) {
-    const investTrend = []
-    for (let month = 1; month <= investMonth; month++) {
-        investTrend.push(capitalRate * month)
+function calcInvestmentTrends(investment: number, durationMonth: number) {
+    const investmentTrends = []
+    for (let month = 1; month <= durationMonth; month++) {
+        investmentTrends.push(investment * month)
     }
-    return investTrend
+    return investmentTrends
 }
 
-
-class Stock {
-
+type Stock = {
     name: string
     capitalRate: number
     incomeRate: number
-
-    constructor(name: string, capitalRate: number, incomeRate: number) {
-        this.name = name
-        this.capitalRate = capitalRate
-        this.incomeRate = incomeRate
-    }
 }
 
-class InvestPlan {
-
-    capital: number
+type InvestmentPlan = {
+    investment: number
     startMonth: number
     endMonth: number
+}
 
-    constructor(capital, startMonth = 1, endMonth = MAX_MONTH) {
-        this.capital = capital
-        this.startMonth = startMonth
-        this.endMonth = endMonth
-    }
+type MonthlyInvestment = {
+    month: number
+    investment: number
 }
 
 class StockPlan {
 
     stock: Stock
-    investPlans: Array<InvestPlan>
+    investmentPlans: InvestmentPlan[]
+    #estimatedInvestmentTrends: number[]
 
-    constructor(stock, investPlans) {
+    constructor(stock: Stock, investmentPlans: InvestmentPlan[]) {
+        this.#estimatedInvestmentTrends = []
         this.stock = stock
-        this.investPlans = investPlans
-
-        this.investPlans.sort((a, b) => a.startMonth - b.endMonth)
+        this.investmentPlans = investmentPlans
+        this.checkMonth()
     }
 
-}
-
-class StockGrowth {
-
-    stockPlan: StockPlan
-
-    constructor(stockPlan) {
-        this.stockPlan = stockPlan
+    sortByStartMonth() {
+        this.investmentPlans.sort((a, b) => a.startMonth - b.startMonth)
     }
 
-    calcInvestTrendAll() {
-        let investTrendAll = []
-        const { stock, investPlans } = this.stockPlan
-        const { name, capitalRate, incomeRate } = stock
-        investPlans.forEach(investPlan => {
-            const { startMonth, endMonth } = investPlan
-            const investTrend = calcInvestTrend(capitalRate, endMonth - startMonth + 1)
-            investTrendAll.push(investTrend)
+    checkMonth() {
+        if (this.investmentPlans.length === 0) {
+            throw new Error('No invest plan')
+        }
+
+        this.sortByStartMonth()
+
+        // 開始月 > 終了月になっていないかチェック
+        this.investmentPlans.forEach(investmentPlan => {
+            const { startMonth, endMonth } = investmentPlan
+            if (startMonth > endMonth) {
+                throw new Error('startMonth > endMonth')
+            }
         })
 
-        return investTrendAll
+        // 終了月が次回の開始月より前になっていないかチェック
+        this.investmentPlans.reduce((prevPlan, currentPlan) => {
+            if (prevPlan && prevPlan.endMonth > currentPlan.startMonth) {
+                throw new Error('End month of a plan is greater than start month of the next plan');
+            }
+            return currentPlan; // 次の比較のために現在のプランを次の累積値にする
+        }, null); // 初回の prevPlan を null に設定
+    }
+
+    estimateInvestmentTrends() {
+        // 各投資プランの投資額の推移を計算
+        const investmentTrendsArray = this.investmentPlans.map(plan => {
+            const duration = plan.endMonth - plan.startMonth + 1
+            return calcInvestmentTrends(plan.investment, duration)
+        })
+
+        // 投資プランの順番で投資を行った際の合計投資額の推移を計算
+        this.#estimatedInvestmentTrends = investmentTrendsArray.reduce((prev, current) => {
+            const totalInvestment = prev[prev.length - 1] // 前回までの合計投資額
+            current = current.map(value => value + totalInvestment)
+            return prev.concat(current)
+        }, [])
+        return this.#estimatedInvestmentTrends
     }
 
     calcCapitalGrowth() {
-        let capitalGrowth = []
-        // 
+
+    }
+}
+
+// class Portfolio {}
+
+type MonthlyPerformance = {
+    month: number
+    totalInvestment: number
+    profit: number
+    totalAssets: number
+    income: number
+    totalReturn: number
+}
+
+class StockMonthlyPerformance {
+    stockPlan: StockPlan
+    #monthlyPerformances: MonthlyPerformance[]
+
+    constructor(stockPlan: StockPlan) {
+        this.#monthlyPerformances = []
+        this.stockPlan = stockPlan
+    }
+
+    get monthlyPerformances() {
+        return this.#monthlyPerformances
+    }
+
+    estimateMonthlyInvestmentSchedule() {
+        const monthlyInvestmentSchedule: MonthlyInvestment[] = []
+
+        this.stockPlan.investmentPlans.forEach(investmentPlan => {
+            const { startMonth, endMonth, investment } = investmentPlan;
+            // startMonth から endMonth までの各月に対して投資額を追加
+            for (let month = startMonth; month <= endMonth; month++) {
+                monthlyInvestmentSchedule.push({ month, investment });
+            }
+        });
+        return monthlyInvestmentSchedule
 
     }
 
+    estimateInvestmentTrends() {
+        const monthlyInvestmentSchedule = this.estimateMonthlyInvestmentSchedule()
+
+        // 各投資プランの投資額の推移を計算
+
+        return monthlyInvestmentSchedule
+    }
 }
