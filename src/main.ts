@@ -124,25 +124,42 @@ class StockMonthlyPerformance {
         return this.#monthlyPerformances
     }
 
-    estimateMonthlyInvestmentSchedule() {
-        const monthlyInvestmentSchedule: MonthlyInvestment[] = []
+    estimateMonthlyInvestments(): MonthlyInvestment[] {
+        const monthlyInvestments: MonthlyInvestment[] = Array.from(
+            { length: MAX_MONTH }, (_, i) => ({ month: i + 1, investment: 0 })
+        );
 
         this.stockPlan.investmentPlans.forEach(investmentPlan => {
             const { startMonth, endMonth, investment } = investmentPlan;
             // startMonth から endMonth までの各月に対して投資額を追加
             for (let month = startMonth; month <= endMonth; month++) {
-                monthlyInvestmentSchedule.push({ month, investment });
+                monthlyInvestments[month - 1].investment += investment;
             }
         });
-        return monthlyInvestmentSchedule
+        return monthlyInvestments
 
     }
 
-    estimateInvestmentTrends() {
-        const monthlyInvestmentSchedule = this.estimateMonthlyInvestmentSchedule()
+    estimateTotalInvestmentTrends() {
+        const monthlyInvestments: MonthlyInvestment[] = this.estimateMonthlyInvestments()
+        let totalInvestment = 0; // その月の累計投資額を保持する変数
+        return monthlyInvestments.map(({ month, investment }) => {
+            totalInvestment += investment; // 現在の月の投資額を累計に加算
+            return { month, totalInvestment: totalInvestment }; // 累計投資額を返す
+        });
+    }
 
-        // 各投資プランの投資額の推移を計算
+    estimateTotalAssetsTrends() {
+        const monthlyInvestments: MonthlyInvestment[] = this.estimateMonthlyInvestments()
+        const { name, capitalRate, incomeRate } = this.stockPlan.stock
+        let totalAssets = 0; // その月の累計資産額を保持する変数
+        for (let month = 1; month < monthlyInvestments.length + 1; month++) {
+            const monthlyInvestment = monthlyInvestments[month];
+            const monthlyIncome = monthlyInvestment.investment * incomeRate
+            const monthlyCapital = monthlyInvestment.investment * capitalRate
+            totalAssets += monthlyIncome - monthlyCapital
 
-        return monthlyInvestmentSchedule
+        }
+        // return totalAssetsTrends
     }
 }
