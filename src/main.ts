@@ -33,9 +33,9 @@ type InvestmentPlan = {
     endMonth: number
 }
 
-type MonthlyInvestment = {
-    month: number
-    investment: number
+type monthlyReturn = {
+    income: number
+    capital: number
 }
 
 class StockPlan {
@@ -102,18 +102,18 @@ class StockPlan {
 
 // class Portfolio {}
 
-type MonthlyPerformance = {
+type TotalPerformance = {
     month: number
-    totalInvestment: number
-    profit: number
-    totalAssets: number
+    investment: number
+    assets: number
     income: number
+    capital: number
     totalReturn: number
 }
 
 class StockMonthlyPerformance {
     stockPlan: StockPlan
-    #monthlyPerformances: MonthlyPerformance[]
+    #monthlyPerformances: TotalPerformance[]
 
     constructor(stockPlan: StockPlan) {
         this.#monthlyPerformances = []
@@ -124,16 +124,14 @@ class StockMonthlyPerformance {
         return this.#monthlyPerformances
     }
 
-    estimateMonthlyInvestments(): MonthlyInvestment[] {
-        const monthlyInvestments: MonthlyInvestment[] = Array.from(
-            { length: MAX_MONTH }, (_, i) => ({ month: i + 1, investment: 0 })
-        );
+    estimateMonthlyInvestments(): number[] {
+        const monthlyInvestments: number[] = new Array(MAX_MONTH).fill(0)
 
         this.stockPlan.investmentPlans.forEach(investmentPlan => {
             const { startMonth, endMonth, investment } = investmentPlan;
             // startMonth から endMonth までの各月に対して投資額を追加
             for (let month = startMonth; month <= endMonth; month++) {
-                monthlyInvestments[month - 1].investment += investment;
+                monthlyInvestments[month - 1] += investment;
             }
         });
         return monthlyInvestments
@@ -141,25 +139,55 @@ class StockMonthlyPerformance {
     }
 
     estimateTotalInvestmentTrends() {
-        const monthlyInvestments: MonthlyInvestment[] = this.estimateMonthlyInvestments()
-        let totalInvestment = 0; // その月の累計投資額を保持する変数
-        return monthlyInvestments.map(({ month, investment }) => {
+        const monthlyInvestments: number[] = this.estimateMonthlyInvestments()
+        let totalInvestment = 0; // その月の累計投資額
+        return monthlyInvestments.map((investment) => {
             totalInvestment += investment; // 現在の月の投資額を累計に加算
-            return { month, totalInvestment: totalInvestment }; // 累計投資額を返す
+            return totalInvestment; // 累計投資額を返す
         });
     }
 
-    estimateTotalAssetsTrends() {
-        const monthlyInvestments: MonthlyInvestment[] = this.estimateMonthlyInvestments()
+    estimateMonthlyReturns() {
+        const monthlyInvestments: number[] = this.estimateMonthlyInvestments()
         const { name, capitalRate, incomeRate } = this.stockPlan.stock
-        let totalAssets = 0; // その月の累計資産額を保持する変数
-        for (let month = 1; month < monthlyInvestments.length + 1; month++) {
-            const monthlyInvestment = monthlyInvestments[month];
-            const monthlyIncome = monthlyInvestment.investment * incomeRate
-            const monthlyCapital = monthlyInvestment.investment * capitalRate
-            totalAssets += monthlyIncome - monthlyCapital
+        const monthlyReturns: monthlyReturn[] = [];
+        let prevTotalAssets = 0; // 前月の総資産額
+        return monthlyInvestments.map((investment) => {
+            const monthlyIncome = (investment + prevTotalAssets) * incomeRate
+            const monthlyCapital = (investment + prevTotalAssets) * capitalRate
+            prevTotalAssets += investment + monthlyCapital + monthlyIncome
+            return { income: monthlyIncome, capital: monthlyCapital }
+        })
+    }
 
+    // Reduceを使った実装
+    estimateTotalPerformance() {
+        const monthlyReturns: monthlyReturn[] = this.estimateMonthlyReturns()
+        const monthlyInvestments: number[] = this.estimateMonthlyInvestments()
+        const totalPerformances: TotalPerformance[] = Array.from(
+            { length: MAX_MONTH }, (_, i) => ({ month: i + 1, investment: 0, assets: 0, income: 0, capital: 0, totalReturn: 0 })
+        )
+        const initialPerformance = {
+            month: 1,
+            investment: monthlyInvestments[0],
+            assets: monthlyInvestments[0],
+            capital: 0,
+            income: 0,
+            totalReturn: 0
         }
-        // return totalAssetsTrends
+
+        return totalPerformances.reduce((prev, _, index) => {
+            const totalPerformance = {
+                month: index + 1,
+                investment: prev.investment + monthlyInvestments[index],
+                assets: prev.assets + monthlyReturns[index].capital,
+                income: prev.income + monthlyReturns[index].income,
+                capital: prev.capital + monthlyReturns[index].income,
+                totalReturn: prev.totalReturn + monthlyReturns[index].capital + monthlyReturns[index].income,
+            }
+            totalPerformances[index] = totalPerformance
+            return totalPerformance
+        }, initialPerformance)
+
     }
 }
