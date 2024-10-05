@@ -97,7 +97,7 @@ class PerformanceCalculator {
     }
 
     get monthlyPerformances() {
-        if (!this._performances.length) {
+        if (!this._performances) {
             this._performances = this.estimatePerformance()
         }
         return this._performances
