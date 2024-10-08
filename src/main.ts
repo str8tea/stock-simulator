@@ -1,20 +1,49 @@
 const MAX_MONTH = 12 * 50
 
 function myFunction() {
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet()
+    const sheet = ss.getSheetByName('シミュレーション')
+
+    // 銘柄情報を取得
+    const nameRange = sheet.getRange('A2')
+    const name = nameRange.getValue()
+    const rateRange = sheet.getRange('A4:B4')
+    const values = rateRange.getValues()
+    const capitalRate = values[0][0]
+    const incomeRate = values[0][1]
+
     const stock: Stock = {
-        name: 'SHCD',
-        capitalRate: 0.003,
-        incomeRate: 0.003
+        name: name,
+        capitalRate: capitalRate,
+        incomeRate: incomeRate,
     }
 
-    const investmentPeriod: InvestmentPeriod[] = [
-        { investment: 10000, startMonth: 1, endMonth: 12 },
-        { investment: 20000, startMonth: 13, endMonth: 24 },
-    ]
+    // 投資計画を取得
+    const investmentPlanRange = sheet.getRange('C4:E8')
+    const investmentPeriodValues = investmentPlanRange.getValues()
 
-    const investmentPlan = new InvestmentPlan(stock, investmentPeriod)
+    const investmentPeriods: InvestmentPeriod[] = investmentPeriodValues.map((value) => {
+        return {
+            investment: value[0],
+            startMonth: value[1],
+            endMonth: value[2],
+        }
+    })
+
+    console.log(investmentPeriods)
+
+    const investmentPlan = new InvestmentPlan(stock, investmentPeriods)
     const performanceCalculator = new PerformanceCalculator(investmentPlan)
-    console.log(performanceCalculator.monthlyPerformances)
+
+    const performance = performanceCalculator.monthlyPerformances
+    console.log(performance)
+    const performanceTable = performance.map((performance) => {
+        const { month, investment, assets, income, capital, totalReturn } = performance
+        return [month, investment, assets, income, capital, totalReturn]
+    })
+    const performanceRange = sheet.getRange(10, 1, performance.length, 6)
+    performanceRange.setValues(performanceTable)
 }
 
 function calcInvestmentTrends(investment: number, durationMonth: number) {
