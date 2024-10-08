@@ -26,15 +26,15 @@ function calcInvestmentTrends(investment: number, durationMonth: number) {
 }
 
 interface Stock {
-    name: string
-    capitalRate: number
-    incomeRate: number
+    readonly name: string
+    readonly capitalRate: number
+    readonly incomeRate: number
 }
 
 interface InvestmentPeriod {
-    investment: number
-    startMonth: number
-    endMonth: number
+    readonly investment: number
+    readonly startMonth: number
+    readonly endMonth: number
 }
 
 type MonthlyReturn = {
@@ -103,7 +103,7 @@ class PerformanceCalculator {
         return this._performances
     }
 
-    estimateMonthlyInvestments(): number[] {
+    private estimateMonthlyInvestments(): number[] {
         const monthlyInvestments = new Array(MAX_MONTH).fill(0)
 
         this.investmentPlan.periods.forEach(({ startMonth, endMonth, investment }) => {
@@ -116,7 +116,7 @@ class PerformanceCalculator {
 
     }
 
-    estimateMonthlyReturns(): MonthlyReturn[] {
+    private estimateMonthlyReturns(): MonthlyReturn[] {
         const monthlyInvestments = this.estimateMonthlyInvestments()
         const stock = this.investmentPlan.stock
         let prevTotalAssets = 0; // 前月の総資産額
