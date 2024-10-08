@@ -23,13 +23,16 @@ function myFunction() {
     const investmentPlanRange = sheet.getRange('C4:E8')
     const investmentPeriodValues = investmentPlanRange.getValues()
 
-    const investmentPeriods: InvestmentPeriod[] = investmentPeriodValues.map((value) => {
-        return {
-            investment: value[0],
-            startMonth: value[1],
-            endMonth: value[2],
-        }
-    })
+    const investmentPeriods: InvestmentPeriod[] =
+        investmentPeriodValues.map((value) => {
+            return {
+                investment: value[0],
+                startMonth: value[1],
+                endMonth: value[2],
+            }
+        }).filter((value) => {
+            return value.investment > 0
+        })
 
     console.log(investmentPeriods)
 
