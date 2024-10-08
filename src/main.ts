@@ -15,8 +15,8 @@ function myFunction() {
 
     const stock: Stock = {
         name: name,
-        capitalRate: capitalRate,
-        incomeRate: incomeRate,
+        capitalRate: capitalRate / 12,
+        incomeRate: incomeRate / 12,
     }
 
     // 投資計画を取得
