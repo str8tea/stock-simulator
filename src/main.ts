@@ -1,26 +1,28 @@
 const MAX_MONTH = 12 * 30
 function main() {
+    const TOP_ROW = 5
+    const PERFORMANCE_TOP_ROW = 13
 
     const url = "https://docs.google.com/spreadsheets/d/1sm5uQ0HTbfVOVlZjriJbNlz2sOFp1CB9f_8pf8Z7hZ4/edit"
     const ss = SpreadsheetApp.openByUrl(url)
     const sheet = ss.getSheetByName('シミュレーション')
 
     // NASDAQの投資計画
-    const investmentPlan = readInvestmentInfo(sheet, 5, 1)
+    const investmentPlan = readInvestmentInfo(sheet, TOP_ROW, PERFORMANCE_TOP_ROW - 1, 1)
     const performanceCalculator = new PerformanceCalculator(investmentPlan)
     const performance = performanceCalculator.monthlyPerformances
-    writePerdformance(sheet, 12, 1, performance)
+    writePerdformance(sheet, PERFORMANCE_TOP_ROW, 1, performance)
 
     // SCHDの投資計画
-    const investmentPlan2 = readInvestmentInfo(sheet, 5, 8)
+    const investmentPlan2 = readInvestmentInfo(sheet, TOP_ROW, PERFORMANCE_TOP_ROW - 1, 8)
     const performanceCalculator2 = new PerformanceCalculator(investmentPlan2)
     const performance2 = performanceCalculator2.monthlyPerformances
     console.log(performance2)
-    writePerdformance(sheet, 12, 8, performance2)
+    writePerdformance(sheet, PERFORMANCE_TOP_ROW, 8, performance2)
 }
 
 
-function readInvestmentInfo(sheet: GoogleAppsScript.Spreadsheet.Sheet, topRow: number, leftColumn: number): InvestmentPlan {
+function readInvestmentInfo(sheet: GoogleAppsScript.Spreadsheet.Sheet, topRow: number, bottomRow: number, leftColumn: number): InvestmentPlan {
     // 銘柄情報を取得
     const nameRange = sheet.getRange(topRow, leftColumn)
     const name = nameRange.getValue()
@@ -36,7 +38,7 @@ function readInvestmentInfo(sheet: GoogleAppsScript.Spreadsheet.Sheet, topRow: n
     }
 
     // 投資計画を取得
-    const investmentPlanRange = sheet.getRange(topRow + 1, leftColumn + 3, 4, 3)
+    const investmentPlanRange = sheet.getRange(topRow + 1, leftColumn + 3, bottomRow - topRow, 3)
     const investmentPeriodValues = investmentPlanRange.getValues()
     const investmentPeriods: InvestmentPeriod[] =
         investmentPeriodValues.map((value) => {
