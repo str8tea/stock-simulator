@@ -1,4 +1,25 @@
 const MAX_MONTH = 12 * 30
+function main() {
+
+    const url = "https://docs.google.com/spreadsheets/d/1sm5uQ0HTbfVOVlZjriJbNlz2sOFp1CB9f_8pf8Z7hZ4/edit"
+    const ss = SpreadsheetApp.openByUrl(url)
+    const sheet = ss.getSheetByName('シミュレーション')
+
+    // NASDAQの投資計画
+    const investmentPlan = readInvestmentInfo(sheet, 3, 1)
+    const performanceCalculator = new PerformanceCalculator(investmentPlan)
+    const performance = performanceCalculator.monthlyPerformances
+    writePerdformance(sheet, 10, 1, performance)
+
+    // SCHDの投資計画
+    const investmentPlan2 = readInvestmentInfo(sheet, 3, 8)
+    const performanceCalculator2 = new PerformanceCalculator(investmentPlan2)
+    const performance2 = performanceCalculator2.monthlyPerformances
+    console.log(performance2)
+    writePerdformance(sheet, 10, 8, performance2)
+}
+
+
 function readInvestmentInfo(sheet: GoogleAppsScript.Spreadsheet.Sheet, topRow: number, leftColumn: number): InvestmentPlan {
     // 銘柄情報を取得
     const nameRange = sheet.getRange(topRow, leftColumn)
@@ -38,26 +59,6 @@ function writePerdformance(sheet: GoogleAppsScript.Spreadsheet.Sheet, topRow: nu
     })
     const performanceRange = sheet.getRange(topRow, leftColumn, performances.length, performanceTable[0].length)
     performanceRange.setValues(performanceTable)
-}
-
-function myFunction() {
-
-    const url = "https://docs.google.com/spreadsheets/d/1sm5uQ0HTbfVOVlZjriJbNlz2sOFp1CB9f_8pf8Z7hZ4/edit"
-    const ss = SpreadsheetApp.openByUrl(url)
-    const sheet = ss.getSheetByName('シミュレーション')
-
-    // NASDAQの投資計画
-    const investmentPlan = readInvestmentInfo(sheet, 3, 1)
-    const performanceCalculator = new PerformanceCalculator(investmentPlan)
-    const performance = performanceCalculator.monthlyPerformances
-    writePerdformance(sheet, 10, 1, performance)
-
-    // SCHDの投資計画
-    const investmentPlan2 = readInvestmentInfo(sheet, 3, 8)
-    const performanceCalculator2 = new PerformanceCalculator(investmentPlan2)
-    const performance2 = performanceCalculator2.monthlyPerformances
-    console.log(performance2)
-    writePerdformance(sheet, 10, 8, performance2)
 }
 
 function calcInvestmentTrends(investment: number, durationMonth: number) {
