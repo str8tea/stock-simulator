@@ -57,7 +57,7 @@ function myFunction() {
     const performanceCalculator2 = new PerformanceCalculator(investmentPlan2)
     const performance2 = performanceCalculator2.monthlyPerformances
     console.log(performance2)
-    writePerdformance(sheet, 23, 1, performance2)
+    writePerdformance(sheet, 10, 8, performance2)
 }
 
 function calcInvestmentTrends(investment: number, durationMonth: number) {
