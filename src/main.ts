@@ -1,17 +1,12 @@
-const MAX_MONTH = 12 * 50
-
-function myFunction() {
-
-    const ss = SpreadsheetApp.getActiveSpreadsheet()
-    const sheet = ss.getSheetByName('シミュレーション')
-
+const MAX_MONTH = 12 * 30
+function readInvestmentInfo(sheet: GoogleAppsScript.Spreadsheet.Sheet, topRow: number, leftColumn: number): InvestmentPlan {
     // 銘柄情報を取得
-    const nameRange = sheet.getRange('A2')
+    const nameRange = sheet.getRange(topRow, leftColumn)
     const name = nameRange.getValue()
-    const rateRange = sheet.getRange('A4:B4')
-    const values = rateRange.getValues()
-    const capitalRate = values[0][0]
-    const incomeRate = values[0][1]
+    const rateRange = sheet.getRange(topRow + 1, leftColumn + 1, 1, 2)
+    const rateList = rateRange.getValues()
+    const capitalRate = rateList[0][0]
+    const incomeRate = rateList[0][1]
 
     const stock: Stock = {
         name: name,
@@ -20,9 +15,8 @@ function myFunction() {
     }
 
     // 投資計画を取得
-    const investmentPlanRange = sheet.getRange('C4:E8')
+    const investmentPlanRange = sheet.getRange(topRow + 1, leftColumn + 3, 4, 3)
     const investmentPeriodValues = investmentPlanRange.getValues()
-
     const investmentPeriods: InvestmentPeriod[] =
         investmentPeriodValues.map((value) => {
             return {
@@ -30,23 +24,40 @@ function myFunction() {
                 startMonth: value[1],
                 endMonth: value[2],
             }
-        }).filter((value) => {
-            return value.investment > 0
-        })
+        }).filter((value) =>
+            value.investment > 0
+        )
 
-    console.log(investmentPeriods)
+    return new InvestmentPlan(stock, investmentPeriods)
+}
 
-    const investmentPlan = new InvestmentPlan(stock, investmentPeriods)
-    const performanceCalculator = new PerformanceCalculator(investmentPlan)
-
-    const performance = performanceCalculator.monthlyPerformances
-    console.log(performance)
-    const performanceTable = performance.map((performance) => {
+function writePerdformance(sheet: GoogleAppsScript.Spreadsheet.Sheet, topRow: number, leftColumn: number, performances: PerformanceMetorics[]) {
+    const performanceTable = performances.map((performance) => {
         const { month, investment, assets, income, capital, totalReturn } = performance
         return [month, investment, assets, income, capital, totalReturn]
     })
-    const performanceRange = sheet.getRange(10, 1, performance.length, 6)
+    const performanceRange = sheet.getRange(topRow, leftColumn, performances.length, performanceTable[0].length)
     performanceRange.setValues(performanceTable)
+}
+
+function myFunction() {
+
+    const url = "https://docs.google.com/spreadsheets/d/1sm5uQ0HTbfVOVlZjriJbNlz2sOFp1CB9f_8pf8Z7hZ4/edit"
+    const ss = SpreadsheetApp.openByUrl(url)
+    const sheet = ss.getSheetByName('シミュレーション')
+
+    // NASDAQの投資計画
+    const investmentPlan = readInvestmentInfo(sheet, 3, 1)
+    const performanceCalculator = new PerformanceCalculator(investmentPlan)
+    const performance = performanceCalculator.monthlyPerformances
+    writePerdformance(sheet, 10, 1, performance)
+
+    // SCHDの投資計画
+    const investmentPlan2 = readInvestmentInfo(sheet, 3, 8)
+    const performanceCalculator2 = new PerformanceCalculator(investmentPlan2)
+    const performance2 = performanceCalculator2.monthlyPerformances
+    console.log(performance2)
+    writePerdformance(sheet, 23, 1, performance2)
 }
 
 function calcInvestmentTrends(investment: number, durationMonth: number) {
