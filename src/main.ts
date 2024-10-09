@@ -62,7 +62,7 @@ function writePerdformance(sheet: GoogleAppsScript.Spreadsheet.Sheet, topRow: nu
         const { month, investment, assets, income, capital, totalReturn } = performance
         return [month, investment, assets, income, capital, totalReturn]
     })
-    const performanceRange = sheet.getRange(topRow + 1, leftColumn + 1, performances.length, performanceTable[0].length)
+    const performanceRange = sheet.getRange(topRow + 1, leftColumn, performances.length, performanceTable[0].length)
     performanceRange.setValues(performanceTable)
 }
 
