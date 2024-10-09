@@ -6,17 +6,17 @@ function main() {
     const sheet = ss.getSheetByName('シミュレーション')
 
     // NASDAQの投資計画
-    const investmentPlan = readInvestmentInfo(sheet, 3, 1)
+    const investmentPlan = readInvestmentInfo(sheet, 5, 1)
     const performanceCalculator = new PerformanceCalculator(investmentPlan)
     const performance = performanceCalculator.monthlyPerformances
-    writePerdformance(sheet, 10, 1, performance)
+    writePerdformance(sheet, 12, 1, performance)
 
     // SCHDの投資計画
-    const investmentPlan2 = readInvestmentInfo(sheet, 3, 8)
+    const investmentPlan2 = readInvestmentInfo(sheet, 5, 8)
     const performanceCalculator2 = new PerformanceCalculator(investmentPlan2)
     const performance2 = performanceCalculator2.monthlyPerformances
     console.log(performance2)
-    writePerdformance(sheet, 10, 8, performance2)
+    writePerdformance(sheet, 12, 8, performance2)
 }
 
 
@@ -53,11 +53,16 @@ function readInvestmentInfo(sheet: GoogleAppsScript.Spreadsheet.Sheet, topRow: n
 }
 
 function writePerdformance(sheet: GoogleAppsScript.Spreadsheet.Sheet, topRow: number, leftColumn: number, performances: PerformanceMetorics[]) {
+    // ヘッダーを描画
+    const headerRange = sheet.getRange(topRow, leftColumn, 1, 6)
+    headerRange.setValues([['月', '投資額', '資産額', '配当金', 'キャピタルゲイン', 'トータルリターン']])
+
+    // パフォーマンスを表形式で描画
     const performanceTable = performances.map((performance) => {
         const { month, investment, assets, income, capital, totalReturn } = performance
         return [month, investment, assets, income, capital, totalReturn]
     })
-    const performanceRange = sheet.getRange(topRow, leftColumn, performances.length, performanceTable[0].length)
+    const performanceRange = sheet.getRange(topRow + 1, leftColumn + 1, performances.length, performanceTable[0].length)
     performanceRange.setValues(performanceTable)
 }
 
