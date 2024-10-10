@@ -160,8 +160,8 @@ class PerformanceCalculator {
 
         this.investmentPlan.periods.forEach(({ startMonth, endMonth, investment }) => {
             // startMonth から endMonth までの各月に対して投資額を追加
-            for (let month = startMonth - 1; month < endMonth; month++) {
-                monthlyInvestments[month] += investment
+            for (let month = startMonth; month < endMonth; month++) {
+                monthlyInvestments[month - 1] += investment
             }
         });
         return monthlyInvestments
