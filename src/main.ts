@@ -3,9 +3,10 @@ function main() {
     const TOP_ROW = 5
     const PERFORMANCE_TOP_ROW = 13
 
-    const url = "https://docs.google.com/spreadsheets/d/1sm5uQ0HTbfVOVlZjriJbNlz2sOFp1CB9f_8pf8Z7hZ4/edit"
-    const ss = SpreadsheetApp.openByUrl(url)
-    const sheet = ss.getSheetByName('シミュレーション')
+    // const url = "https://docs.google.com/spreadsheets/d/1sm5uQ0HTbfVOVlZjriJbNlz2sOFp1CB9f_8pf8Z7hZ4/edit"
+    // const ss = SpreadsheetApp.openByUrl(url)
+    // const sheet = ss.getSheetByName('シミュレーション')
+    const sheet = SpreadsheetApp.getActiveSheet()
 
     // NASDAQの投資計画
     const investmentPlan = readInvestmentInfo(sheet, TOP_ROW, PERFORMANCE_TOP_ROW - 1, 1)
