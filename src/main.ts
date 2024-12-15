@@ -12,14 +12,14 @@ function main() {
     const investmentPlan = readInvestmentInfo(sheet, TOP_ROW, PERFORMANCE_TOP_ROW - 1, 1)
     const performanceCalculator = new PerformanceCalculator(investmentPlan)
     const performance = performanceCalculator.monthlyPerformances
-    writePerdformance(sheet, PERFORMANCE_TOP_ROW, 1, performance)
+    writePerformance(sheet, PERFORMANCE_TOP_ROW, 1, performance)
 
     // SCHDの投資計画
     const investmentPlan2 = readInvestmentInfo(sheet, TOP_ROW, PERFORMANCE_TOP_ROW - 1, 8)
     const performanceCalculator2 = new PerformanceCalculator(investmentPlan2)
     const performance2 = performanceCalculator2.monthlyPerformances
     console.log(performance2)
-    writePerdformance(sheet, PERFORMANCE_TOP_ROW, 8, performance2)
+    writePerformance(sheet, PERFORMANCE_TOP_ROW, 8, performance2)
 }
 
 
@@ -55,7 +55,7 @@ function readInvestmentInfo(sheet: GoogleAppsScript.Spreadsheet.Sheet, topRow: n
     return new InvestmentPlan(stock, investmentPeriods)
 }
 
-function writePerdformance(sheet: GoogleAppsScript.Spreadsheet.Sheet, topRow: number, leftColumn: number, performances: PerformanceMetorics[]) {
+function writePerformance(sheet: GoogleAppsScript.Spreadsheet.Sheet, topRow: number, leftColumn: number, performances: PerformanceMetorics[]) {
     // ヘッダーを描画
     const headerRange = sheet.getRange(topRow, leftColumn, 1, 6)
     headerRange.setValues([['月', '投資額', '資産額', '配当金', 'キャピタルゲイン', 'トータルリターン']])
